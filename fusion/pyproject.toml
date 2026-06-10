@@ -1,0 +1,37 @@
+[project]
+name = "payload-car"
+version = "0.1.0"
+description = "Parametric RC payload car (ESP32, 200 kg, RWD + front servo steering) for Autodesk Fusion"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+payload-car = "payload_car.cli:main"
+
+[project.optional-dependencies]
+# Lint/format only. The model itself runs inside Fusion's interpreter (or via the Fusion MCP),
+# not through this environment — `adsk` only exists there.
+dev = [
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["payload_car"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+
+[tool.ruff.lint]
+# Fusion injects `adsk` at runtime; builder/cli use eval() on trusted internal expressions.
+ignore = ["S307", "F821"]
+
+[dependency-groups]
+dev = [
+    "pillow>=11.3.0",
+]

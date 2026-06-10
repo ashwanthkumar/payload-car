@@ -1,0 +1,10 @@
+{
+    "autodeskProduct": "Fusion360",
+    "type": "script",
+    "author": "",
+    "description": {
+        "": "Parametric RC payload car (200 kg) with ESP32 control PCB, rear-drive motors and front servo steering."
+    },
+    "supportedOS": "windows|mac",
+    "editEnabled": true
+}
