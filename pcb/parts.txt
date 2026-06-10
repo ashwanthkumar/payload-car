@@ -1,0 +1,30 @@
+# Payload Rover carrier PCB — parts
+# Board: 240x140mm, 2-layer (2oz recommended for V36/phase pours).
+
+# ── Power ────────────────────────────────────────────────────────────────────
+J_BAT    WJ500V-5.08-2P       C8465     36V battery in (inline MIDI fuse + E-stop
+#                                        contactor are upstream, in the cabinet)
+C_BULK   220uF 1206           —         bulk cap at the battery terminal
+J_BUCK   Mini560-class module —         36V->5V/3A buck on 4p female header
+#                                        (buy: Mini560 5V or URB2405 style)
+
+# ── MCU (buy locally — not assembled by JLCPCB) ─────────────────────────────
+ESP32    NodeMCU ESP32 30-pin —         WROOM-32 devkit, plugs into ESP_L/ESP_R
+ESP_L/R  Female header 15-pin —         2.54mm (30-pin DevKit rails)
+
+# ── Motor drivers x4 (FL/FR/RL/RR) ──────────────────────────────────────────
+J_Dx_P   Female header 5p     —         3.96mm pitch: V36 GND MA MB MC
+J_Dx_S   Female header 11p    —         2.54mm: hall x5 + VR ZF EL M GND NC
+DRIVER   JYQD-V7.3E class     —         36V BLDC module w/ hall input, 1 per wheel
+#  ⚠ verify module pinout against the purchased revision before soldering
+
+# ── Per-motor IO ─────────────────────────────────────────────────────────────
+J_PH_x   WJ128V-5.0-3P        C8270     motor phase terminal (10A+, bottom edge)
+J_HL_x   Male header 5p       —         2.54mm hall pass-through to motor cable
+
+# ── E-stop sense + status ────────────────────────────────────────────────────
+J_ES     WJ500V-5.08-2P       C8465     E-stop latching-state sense (dry contact)
+R_ES     10k 0603             —         pull-up to 3V3
+C_ES     100nF 0603           —         debounce
+LED_PWR  red 0603 + 1k        —         5V rail indicator (hardware)
+LED_STAT green 0603 + 330     —         GPIO4 status

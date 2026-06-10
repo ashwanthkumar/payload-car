@@ -220,7 +220,10 @@ def assemble(app):
     def pv(name):
         return design.userParameters.itemByName(name).value     # cm
     bot = pv('groundClearance') + pv('basePlateThickness') + pv('frameRailHeight') + pv('bedThickness')
-    gx = -pv('chassisLength') / 2 - pv('sheetThk') - pv('standoffHeight')   # standoff tip plane
+    # the tscircuit STEP (pcb/exports/control_pcb.step) is centred on the FR4 mid-plane:
+    # its back face sits at local z=-0.7mm, so shift the origin to land it on the standoffs
+    PCB_BACK_Z = -0.07                                                      # cm, local
+    gx = -pv('chassisLength') / 2 - pv('sheetThk') - pv('standoffHeight') + PCB_BACK_Z
     gy = -pv('chassisWidth') / 5
     gz = bot + pv('sheetThk') + 1.2 + pv('pcbHeight') / 2                   # board centre height
     V3 = adsk.core.Vector3D.create
