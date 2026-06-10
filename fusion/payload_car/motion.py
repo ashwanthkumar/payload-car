@@ -152,6 +152,37 @@ def animate_diff(app, frames=FRAMES, width=1100, height=700, diff_sign=-1.0):
     print('captured %d frames -> %s' % (frames, DIFF_FRAMES_DIR))
 
 
+def play(app, cycles=3, steps=72, diff_sign=-1.0):
+    """Play the rocker articulation LIVE in the Fusion viewport (no frames, no files).
+
+    Drives the real joints (Rev_Arm_L/R + Rev_Diff) through `cycles` full see-saw cycles
+    for direct on-screen review. NOTE: Fusion's Animation-workspace storyboards cannot be
+    used for this - the API exposes no action/keyframe authoring, and that workspace
+    ignores joints entirely - so this, joint dragging, and right-click 'Drive Joint' on a
+    revolute joint are the ways to watch the mechanism inside Fusion."""
+    design = adsk.fusion.Design.cast(app.activeProduct)
+    root = design.rootComponent
+    joints = {j.name: j for j in root.asBuiltJoints}
+    rev_l, rev_r, rev_d = joints['Rev_Arm_L'], joints['Rev_Arm_R'], joints['Rev_Diff']
+    up = design.userParameters
+    ratio = up.itemByName('diffOffsetX').value / up.itemByName('rockerArmY').value
+    vp = app.activeViewport
+    amp = math.radians(ARM_SWING_DEG)
+    for _c in range(cycles):
+        for i in range(steps):
+            th = amp * math.sin(2.0 * math.pi * i / steps)
+            rev_l.jointMotion.rotationValue = th
+            rev_r.jointMotion.rotationValue = -th
+            rev_d.jointMotion.rotationValue = diff_sign * ratio * th
+            adsk.doEvents()
+            vp.refresh()
+    for j in (rev_l, rev_r, rev_d):
+        j.jointMotion.rotationValue = 0.0
+    adsk.doEvents()
+    vp.refresh()
+    print('played %d cycles' % cycles)
+
+
 def pose(app, arm_deg, diff_sign=-1.0):
     """Hold a single articulation pose (degrees on the left arm); for checks and stills."""
     design = adsk.fusion.Design.cast(app.activeProduct)
