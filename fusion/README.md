@@ -12,7 +12,8 @@ modules below from disk (they stay the single source of truth):
 |---|---|
 | `payload_car/builder.py` | the car: chassis, payload bay, rear cabinet, rocker suspension |
 | `payload_car/wheel_mount.py` | the hub-motor wheel module → saved as `components/hub_motor.f3d` |
-| `payload_car/assemble.py` | the full assembly: car + 4 wheel xrefs + scale human → cloud doc `payload_car_4wd` + `components/payload_car_4wd.f3d` |
+| `payload_car/control_pcb.py` | the ESP32 carrier PCB (mechanical model) → `components/control_pcb.f3d` |
+| `payload_car/assemble.py` | the full assembly: car + 4 wheel xrefs + PCB xref + scale human → cloud doc `payload_car_4wd` + `components/payload_car_4wd.f3d` |
 
 ## Project layout (uv)
 
@@ -23,7 +24,8 @@ fusion/
 └── payload_car/              importable package + Fusion script folder
     ├── builder.py            car model: PARAMS/ROCKER_PARAMS + build(app) + build_rocker()
     ├── wheel_mount.py        hub-motor wheel module (RKI 9051 drawing) + dropout/torque-arm mount
-    ├── assemble.py           assembly step: wheel transforms, Motors group, joints, save + export
+    ├── control_pcb.py        ESP32 carrier PCB: board + mounting holes + component stack
+    ├── assemble.py           assembly step: wheel + PCB xrefs, Motors group, joints, save + export
     ├── motion.py             rocker motion study: drives the joints, renders media/rocker_motion.gif
     ├── cli.py                `payload-car` CLI (validate / params / bootstrap)
     ├── payload_car.py        Fusion script entry
@@ -54,8 +56,11 @@ xrefs, adds the scale human, cloud-saves `payload_car_4wd` and exports the `.f3d
 payload_car_4wd
 ├── Core_Chassis        base plate + side rails + cross members + tubular bumpers
 ├── Payload_Bay         galvanised deck + welded box: 4 MS square-tube columns + steel sheets
-├── Rear_Cabinet        same welded construction; twin rear doors, battery, vertical ESP32
-│                       PCB + 4 motor drivers, cable glands, power switch, E-stop on top
+├── Rear_Cabinet        same welded construction; twin rear doors, battery, PCB standoffs,
+│                       cable glands, power switch, E-stop on top
+├── control_pcb         xref: ESP32 carrier PCB on the cabinet standoffs - 4x BLDC driver
+│                       daughterboards w/ heatsinks, XT60 + fuse + buck, per-motor phase
+│                       terminals + hall connectors (mechanical model; ECAD comes later)
 ├── Rocker_Suspension   DELETABLE walking-beam rocker (see below)
 ├── Motors              4× hub_motor xrefs at (±wheelbase/2, ±trackWidth/2), axle z = wheelOD/2
 └── Scale_Human_173cm   blocky reference man

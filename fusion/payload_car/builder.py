@@ -44,18 +44,12 @@ PARAMS = {
     'batteryLength':        [130.0,  'Battery pack depth (X)'],
     'batteryWidth':         [220.0,  'Battery pack width (Y)'],
     'batteryHeight':        [95.0,   'Battery pack height (Z)'],
-    # --- control PCB + 4 motor drivers, mounted vertically facing the door ---
-    'pcbWidth':             [240.0,  'Control PCB width (Y)'],
-    'pcbHeight':            [140.0,  'Control PCB height (Z)'],
-    'pcbThickness':         [1.6,    'PCB thickness (X)'],
-    'standoffDiameter':     [7.0,    'PCB standoff diameter'],
+    # --- control PCB mounting (the board itself is the separate control_pcb.py xref) ---
+    'pcbWidth':             [240.0,  'Control PCB width (Y) = control_pcb boardW'],
+    'pcbHeight':            [140.0,  'Control PCB height (Z) = control_pcb boardH'],
+    'pcbThickness':         [1.6,    'PCB thickness (X) = control_pcb boardThk'],
+    'standoffDiameter':     [7.0,    'PCB standoff diameter (board hole inset matches)'],
     'standoffHeight':       [14.0,   'PCB standoff height off the back wall'],
-    'esp32Width':           [28.0,   'ESP32 module width (Y)'],
-    'esp32Height':          [55.0,   'ESP32 module height (Z)'],
-    'esp32Depth':           [15.0,   'ESP32 module depth off the PCB (X)'],
-    'driverWidth':          [46.0,   'Motor driver width (Y)'],
-    'driverHeight':         [46.0,   'Motor driver height (Z)'],
-    'driverDepth':          [22.0,   'Motor driver depth off the PCB (X)'],
     # --- connections ---
     'glandDia':             [14.0,   'Cable gland diameter (motor cables)'],
     'glandLen':             [22.0,   'Cable gland length'],
@@ -568,7 +562,6 @@ def build(app):
         'batteryLength', 'batteryWidth', 'batteryHeight', APP_BATT)
     # vertical control PCB on standoffs off the front wall (right side), facing the doors
     pcby = '-chassisWidth/5'
-    pcbx = '-chassisLength/2 - sheetThk - standoffHeight - pcbThickness/2'
     pcbz = '(' + BOT + ') + sheetThk + 12'
     si = 0
     for cyo in ['pcbWidth/2 - standoffDiameter', '-(pcbWidth/2 - standoffDiameter)']:
@@ -576,14 +569,9 @@ def build(app):
             si += 1
             cyl_x(cab, 'PCB_Standoff_%d' % si, '(' + pcby + ') + (' + cyo + ')', czo,
                   '-chassisLength/2 - sheetThk - standoffHeight/2', 'standoffDiameter', 'standoffHeight', APP_BRASS)
-    box(cab, 'PCB', pcbx, pcby, pcbz, 'pcbThickness', 'pcbWidth', 'pcbHeight', APP_PCB)
-    compx = '(' + pcbx + ') - pcbThickness/2'
-    box(cab, 'ESP32', '(' + compx + ') - esp32Depth/2', pcby,
-        '(' + pcbz + ') + pcbHeight - esp32Height - 12', 'esp32Depth', 'esp32Width', 'esp32Height', APP_BLACK)
-    for nm, dyo in zip(['Driver_FL', 'Driver_FR', 'Driver_RL', 'Driver_RR'],
-                       ['pcbWidth*0.36', 'pcbWidth*0.12', '-pcbWidth*0.12', '-pcbWidth*0.36']):
-        box(cab, nm, '(' + compx + ') - driverDepth/2', '(' + pcby + ') + (' + dyo + ')',
-            '(' + pcbz + ') + 14', 'driverDepth', 'driverWidth', 'driverHeight', APP_BLUE)
+    # The board itself is NOT modelled here: the real ESP32 carrier PCB is its own document
+    # (control_pcb.py -> cloud doc 'control_pcb') and assemble.py xref-inserts it onto these
+    # standoffs, vertical, components facing the doors. Its M3 holes match this standoff grid.
     # connections: four motor-cable glands through the front wall + a power switch on the side
     for i, gyo in enumerate(['chassisWidth*0.30', 'chassisWidth*0.10', '-chassisWidth*0.10', '-chassisWidth*0.30']):
         cyl_x(cab, 'Gland_%d' % (i + 1), gyo, '(' + BOT + ') + 40', '-chassisLength/2 - sheetThk',

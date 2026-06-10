@@ -34,6 +34,7 @@ WHEEL_PY = os.path.join(HERE, 'wheel_mount.py')
 EXPORT_F3D = os.path.normpath(os.path.join(HERE, '..', '..', 'components', 'payload_car_4wd.f3d'))
 CLOUD_DOC = 'payload_car_4wd'
 HUB_DOC = 'hub_motor'                      # cloud doc holding the wheel module (xref-inserted)
+PCB_DOC = 'control_pcb'                    # cloud doc holding the ESP32 carrier PCB (xref-inserted)
 HUMAN_HEIGHT_NOTE = 'Scale_Human_173cm'
 
 
@@ -175,15 +176,21 @@ def assemble(app):
     root = design.rootComponent
 
     folder = _project_folder(app)
-    hub_file = None
-    for i in range(folder.dataFiles.count):
-        df = folder.dataFiles.item(i)
+    hub_file = pcb_file = old_assembly = None
+    for i in range(folder.dataFiles.count):          # scan first, delete after - deleteMe()
+        df = folder.dataFiles.item(i)                # mid-loop shifts the collection indices
         if df.name == HUB_DOC:
             hub_file = df
+        if df.name == PCB_DOC:
+            pcb_file = df
         if df.name == CLOUD_DOC:
-            df.deleteMe()                            # replace the previous saved assembly
+            old_assembly = df
+    if old_assembly is not None:
+        old_assembly.deleteMe()                      # replace the previous saved assembly
     if hub_file is None:
         raise RuntimeError('cloud doc %r not found - build/save wheel_mount.py first' % HUB_DOC)
+    if pcb_file is None:
+        raise RuntimeError('cloud doc %r not found - build/save control_pcb.py first' % PCB_DOC)
     app.activeDocument.saveAs(CLOUD_DOC, folder, 'Skid-steer payload rover (assembled)', '')
 
     # wheel transforms: axle height comes from the hub module itself, corners from the car params
@@ -205,6 +212,23 @@ def assemble(app):
     for x, y, flip in ((wb / 2, tw / 2, True), (wb / 2, -tw / 2, False),
                        (-wb / 2, tw / 2, True), (-wb / 2, -tw / 2, False)):
         motors.component.occurrences.addByInsert(hub_file, xf(x, y, flip), True)
+
+    # ESP32 carrier PCB xref: vertical on the cabinet standoffs, components facing the rear
+    # doors. The board is modelled flat (XY, +Z components), so map: local X (width) -> -Y,
+    # local Y (height) -> +Z, local Z (components) -> -X. Local origin is the board centre on
+    # its BACK face plane (z=0), which must land on the standoff tips.
+    def pv(name):
+        return design.userParameters.itemByName(name).value     # cm
+    bot = pv('groundClearance') + pv('basePlateThickness') + pv('frameRailHeight') + pv('bedThickness')
+    gx = -pv('chassisLength') / 2 - pv('sheetThk') - pv('standoffHeight')   # standoff tip plane
+    gy = -pv('chassisWidth') / 5
+    gz = bot + pv('sheetThk') + 1.2 + pv('pcbHeight') / 2                   # board centre height
+    V3 = adsk.core.Vector3D.create
+    pm = adsk.core.Matrix3D.create()
+    pm.setToAlignCoordinateSystems(
+        adsk.core.Point3D.create(0, 0, 0), V3(1, 0, 0), V3(0, 1, 0), V3(0, 0, 1),
+        adsk.core.Point3D.create(gx, gy, gz), V3(0, -1, 0), V3(0, 0, 1), V3(-1, 0, 0))
+    root.occurrences.addByInsert(pcb_file, pm, True)
 
     add_human(app, design, root)
     add_joints(design, root)

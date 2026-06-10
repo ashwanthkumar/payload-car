@@ -15,7 +15,8 @@ If a uv project doesn't exist for new Python work, create one first.
 - Model logic is the single source of truth under `fusion/payload_car/`:
   - `builder.py` — the payload car (chassis, bay, cabinet, rocker suspension)
   - `wheel_mount.py` — the single-sided hub-motor wheel mount
-  - `assemble.py` — full assembly: car + 4 wheel xrefs + scale human + suspension joints, cloud-save + f3d export
+  - `control_pcb.py` — the ESP32 carrier PCB (mechanical model; cloud doc `control_pcb`)
+  - `assemble.py` — full assembly: car + 4 wheel xrefs + PCB xref + scale human + suspension joints, cloud-save + f3d export
   - `motion.py` — joint-driven rocker motion study (frames -> `media/rocker_motion.gif` via `make_gif`)
   The MCP execs these from disk (`exec(compile(open(path).read()...))`) so the file stays canonical.
   Assembly changes go in `assemble.py`, never in throwaway MCP snippets.
