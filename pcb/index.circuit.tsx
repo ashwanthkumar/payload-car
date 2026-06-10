@@ -35,8 +35,10 @@
  *               cabinet glands) + 5p hall header above it
  *
  * ⚠ FAB NOTES
- *  - Phase + V36 paths carry motor current (≈10 A continuous, more at stall):
- *    pour/widen these (the autorouted defaults are NOT enough), 2 oz copper.
+ *  - High current is carried by COPPER POURS (top=V36 flood, bottom=GND) plus
+ *    2.5-3mm tie-in traces; order 2 oz outer copper. Battery bus peaks ~40 A
+ *    with all four motors loaded - the pours are sized for it, traces alone
+ *    would not be.
  *  - E-STOP and the main fuse are intentionally NOT on this board: the red
  *    mushroom on the cabinet drives a contactor that cuts the 36 V feed
  *    upstream of J_BAT. J_ES here is only the latching-state SENSE input.
@@ -71,6 +73,19 @@ export default () => (
     <hole diameter="3.2mm" pcbX={113} pcbY={63} />
     <hole diameter="3.2mm" pcbX={-113} pcbY={-63} />
     <hole diameter="3.2mm" pcbX={113} pcbY={-63} />
+
+    {/* ============================================================ */}
+    {/* COPPER POURS - the actual high-current conductors.            */}
+    {/* Top = V36 flood (battery bus, up to ~40A with all 4 motors    */}
+    {/* loaded); bottom = GND return. 2oz copper. Logic traces get    */}
+    {/* automatic clearance carve-outs inside the pours.              */}
+    {/* ============================================================ */}
+    <copperpour name="POUR_V36" connectsTo="net.V36" layer="top" clearance="0.4mm" />
+    <copperpour name="POUR_GND" connectsTo="net.GND" layer="bottom" clearance="0.3mm" />
+
+    {/* board identification */}
+    <silkscreentext text="PAYLOAD ROVER CARRIER v1.0" pcbX={0} pcbY={-67} anchorAlignment="center" fontSize={2} />
+    <silkscreentext text="! 36V !" pcbX={-105} pcbY={48} anchorAlignment="center" fontSize={1.6} />
 
     {/* ============================================================ */}
     {/* POWER: 36V battery in (fused + contactor'd upstream) + buck   */}
@@ -108,12 +123,12 @@ export default () => (
       pcbX={62}
       pcbY={58}
     />
-    <trace from="J_BAT.V36" to="net.V36" />
-    <trace from="J_BAT.GND" to="net.GND" />
-    <trace from="C_BULK.pin1" to="net.V36" />
-    <trace from="C_BULK.pin2" to="net.GND" />
-    <trace from="J_BUCK.VIN" to="net.V36" />
-    <trace from="J_BUCK.GIN" to="net.GND" />
+    <trace from="J_BAT.V36" to="net.V36" thickness="3mm" />
+    <trace from="J_BAT.GND" to="net.GND" thickness="3mm" />
+    <trace from="C_BULK.pin1" to="net.V36" thickness="1.5mm" />
+    <trace from="C_BULK.pin2" to="net.GND" thickness="1.5mm" />
+    <trace from="J_BUCK.VIN" to="net.V36" thickness="1mm" />
+    <trace from="J_BUCK.GIN" to="net.GND" thickness="1mm" />
     <trace from="J_BUCK.VOUT" to="net.V5" />
     <trace from="J_BUCK.GOUT" to="net.GND" />
 
@@ -253,11 +268,11 @@ export default () => (
           pcbY={-44}
         />
         {/* driver power + motor phases (HIGH CURRENT - pour these) */}
-        <trace from={`J_D${mt.id}_P.V36`} to="net.V36" />
-        <trace from={`J_D${mt.id}_P.GND`} to="net.GND" />
-        <trace from={`J_D${mt.id}_P.MA`} to={`J_PH_${mt.id}.MA`} schDisplayLabel={`PH_${mt.id}_A`} />
-        <trace from={`J_D${mt.id}_P.MB`} to={`J_PH_${mt.id}.MB`} schDisplayLabel={`PH_${mt.id}_B`} />
-        <trace from={`J_D${mt.id}_P.MC`} to={`J_PH_${mt.id}.MC`} schDisplayLabel={`PH_${mt.id}_C`} />
+        <trace from={`J_D${mt.id}_P.V36`} to="net.V36" thickness="3mm" />
+        <trace from={`J_D${mt.id}_P.GND`} to="net.GND" thickness="3mm" />
+        <trace from={`J_D${mt.id}_P.MA`} to={`J_PH_${mt.id}.MA`} schDisplayLabel={`PH_${mt.id}_A`} thickness="2.5mm" />
+        <trace from={`J_D${mt.id}_P.MB`} to={`J_PH_${mt.id}.MB`} schDisplayLabel={`PH_${mt.id}_B`} thickness="2.5mm" />
+        <trace from={`J_D${mt.id}_P.MC`} to={`J_PH_${mt.id}.MC`} schDisplayLabel={`PH_${mt.id}_C`} thickness="2.5mm" />
         {/* hall pass-through: module supplies its own 5V to the motor sensors */}
         <trace from={`J_D${mt.id}_S.H5V`} to={`J_HL_${mt.id}.H5V`} schDisplayLabel={`HL_${mt.id}_5V`} />
         <trace from={`J_D${mt.id}_S.HGND`} to={`J_HL_${mt.id}.HGND`} schDisplayLabel={`HL_${mt.id}_G`} />
