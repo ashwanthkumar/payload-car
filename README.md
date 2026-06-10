@@ -32,7 +32,7 @@ regenerable via `fusion/payload_car/motion.py`).
 CLAUDE.md            project conventions (uv-only Python, build via Fusion MCP)
 fusion/              uv project + all model code (see fusion/README.md)
 └── payload_car/     builder.py · wheel_mount.py · assemble.py · motion.py · cli.py
-components/          exported .f3d artifacts (hub_motor, payload_car_4wd)
+components/          exported .f3d artifacts (untracked; snapshots attached to GitHub Releases)
 docs/                README images
 media/               rendered animations (untracked; regenerable)
 ```
