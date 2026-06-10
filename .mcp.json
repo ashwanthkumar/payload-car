@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "fusion": {
+      "type": "http",
+      "url": "http://localhost:27182/mcp"
+    }
+  }
+}
